@@ -1,3 +1,9 @@
+* Nova PCB (incluir LED);
+
+* Fazer PCB;
+
+* Fazer e imprimir estrutura 3D para o equipamento;
+
 * Encontrar uma forma de validar;
 
 * Escrever;

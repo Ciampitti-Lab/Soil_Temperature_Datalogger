@@ -79,18 +79,16 @@ obtaining_data <- function(file.source, file.path = NULL, GET.API = NULL){
 ### Bar graph ----
 last_reading_graph <- function(data, group.selected){
   
-  last.time <- tail(data$DateTime, n=1)
-  
   lst.reading.data <- data %>%
     filter(Group == group.selected,
-           DateTime == last.time)
+           DateTime == tail(DateTime))
   
   num.breaks <- nrow(lst.reading.data)
   
   graph <- ggplot(data = lst.reading.data,
                   aes(x = Device, y = Reading)) + 
     geom_bar(stat = "identity",
-             fill=rgb(0.376,0.376,0.376)) +
+             fill=rgb(0.2,0.478,0.717)) +
     scale_x_continuous(breaks = seq(0, num.breaks, 1)) +
     ylab("Temperature °C")+
     theme_minimal()
@@ -102,36 +100,82 @@ last_reading_graph <- function(data, group.selected){
 #last_reading_graph(data = data, group.selected = "1")
 
 ### Cards ----
-mean_card_blocks <- function(data){
+template <- function(icon, data_big, data_small, bgColor){
   
-  last.time <- tail(data$DateTime, n=1)
+  div(
+    class = "card",
+    img(
+      src = icon,
+      style = bgColor,
+      class = "icon"
+    ),
+    tags$h3(
+      data_big
+    ),
+    tags$span(
+      data_small,
+      class = "card-small"
+    )
+  )
   
-  lst.reading.data <- data %>%
-    filter(DateTime == last.time) %>%
+}
+
+cards_last <- function(data){
+  
+  last.time <- data %>%
     group_by(Group) %>%
-    summarise(Value = mean(Reading))
+    slice(n())
   
-  choices <- unique(data$Group)
+  dateTimes <- last.time$DateTime
+  choices <- unique(last.time$Group)
   
+  last.readings.data <- data %>%
+    filter(DateTime == dateTimes) %>%
+    group_by(Group) %>%
+    summarise(Mean = mean(Reading, na.rm = TRUE),
+              Max = max(Reading, na.rm = TRUE),
+              Min = min(Reading, na.rm = TRUE),
+              Difference = Max-Min)
   
   lapply(choices, function(choice){
     
-    div(
-      style = "background-color: rgb(136, 171, 184); color: black; padding: 0.3vh; width: 10%; margin: 1vh",
-      tags$h3(
-        style = "text-align: center",
-        str_glue(round(lst.reading.data$Value[lst.reading.data$Group==choice], 1), " °C")
-      ),
-      tags$h5(
-        style = "text-align: end; margin-right: 10%",
-        str_glue("Block ", choice)
-      )
+    column(
+      width = 3,
+      template(icon = "history-icon.svg",
+               data_big = str_glue(round(last.readings.data$Mean[last.readings.data$Group==choice], 1), " °C", " ± ", round(last.readings.data$Difference[last.readings.data$Group==choice], 1)),
+               data_small = str_glue("Block ", choice),
+               bgColor = "--bgColor:rgb(0, 32, 96); --rotation:rotate(0)")
     )
     
   })
-    
+
 }
 
+cards_max_min <- function(data, block, max.min){
+  
+  data.last <- data %>%
+    filter(Group == block,
+           DateTime == tail(DateTime))
+  
+  if(max.min == "max"){
+    arrow.direction <- "up"
+    data_big <- max(data.last$Reading)
+    device <- data.last$Device[data.last$Reading==data_big]
+    bgColor <- "--bgColor:rgb(255, 0, 0); --rotation:rotate(90deg)"
+  }
+  if(max.min == "min"){
+    arrow.direction <- "down"
+    data_big <- min(data.last$Reading)
+    device <- data.last$Device[data.last$Reading==data_big]
+    bgColor <- "--bgColor:rgb(0, 176, 240); --rotation:rotate(270deg)"
+  }
+  
+  template(icon = paste("arrow-", arrow.direction, ".svg", sep = ""),
+           data_big = paste(data_big,"°C"),
+           data_small = paste("Device", device),
+           bgColor = bgColor)
+  
+}
 
 ## Temperature Curves ----
 

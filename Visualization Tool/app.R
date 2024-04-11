@@ -1,6 +1,7 @@
 # Libraries ----
 library(shiny)
 library(shinyWidgets)
+library(plotly)
 source("back-end.R")
 source("front-end.R")
 
@@ -10,6 +11,10 @@ data <- obtaining_data(file.source = "csv", file.path = "file.csv")
 # UI ----
 ui <- tagList(
   
+  ## Include CSS ----
+  includeCSS(path = "www/styles.css"),
+  
+  ## Front-End ----
   main_page(data)
   
 )
@@ -23,7 +28,7 @@ server <- function(input, output, session) {
   })
   
   output$lastReadingCard <- renderUI({
-    mean_card_blocks(data = data)
+    cards_last(data = data)
   })
   
   output$tempCurveBlock <- renderPlotly(
@@ -31,6 +36,18 @@ server <- function(input, output, session) {
                     group.selected = input$tempCurvesBlockRadio,
                     time.scale = input$tempCurvesTimeRadio)
   )
+  
+  output$maxCard <- renderUI({
+    cards_max_min(data = data,
+                  block = input$tempCurvesBlockRadio,
+                  max.min = "max")
+  })
+  
+  output$minCard <- renderUI({
+    cards_max_min(data = data,
+                  block = input$tempCurvesBlockRadio,
+                  max.min = "min")
+  })
   
   output$tempCurveMeanBlock <- renderPlotly(
     curve_mean_blocks(database = data,

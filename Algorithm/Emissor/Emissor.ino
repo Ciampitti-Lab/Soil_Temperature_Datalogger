@@ -2,8 +2,6 @@
 
 // Including Libraries
 #include <Wire.h>
-//#include <SD.h> // For SD Card
-//#include <SPI.h> // For SD Card
 #include <RTClib.h> // For RTC Clock
 #include <OneWire.h> // For Temperature Sensor
 #include <DallasTemperature.h> // For Temperature Sensor
@@ -34,13 +32,21 @@ DallasTemperature sensors(&oneWire);
 int numberOfDevices; 
 
 // Define the maximum number of sensors
-#define MAX_SENSORS 4 
+#define MAX_SENSORS 8
 
 // We'll use this variable to store a found device address
 DeviceAddress tempDeviceAddress[MAX_SENSORS];
 int foundSensors = 0;
 
+// Desired time between measurements, in seconds
+int timeBetween = 1800;
+
+// Warning LED
+#define LED_PIN 8
+
 void setup() {
+
+  pinMode(LED_PIN, OUTPUT);
 
   Serial.begin(9600);
 
@@ -48,6 +54,7 @@ void setup() {
   if (! rtc.begin())
   {
     Serial.println("Clock module not found!");
+    digitalWrite(LED_PIN, HIGH);
     while(1);
     
   }
@@ -60,6 +67,8 @@ void setup() {
     delay(500);
   }else{
     Serial.println("Starting LoRa Failed!");
+    digitalWrite(LED_PIN, HIGH);
+    while(1);
   }
   LoRa.setSyncWord(0xF3);
 
@@ -96,10 +105,18 @@ void setup() {
     }
     // If not all sensors are found, delay and then retry
     if (foundSensors < MAX_SENSORS) {
+      digitalWrite(LED_PIN, HIGH);
       Serial.println("Not all sensors found. Retrying in 5 seconds...");
       delay(5000);
       foundSensors = 0;
     }
+  }
+
+  if(foundSensors == MAX_SENSORS){
+    digitalWrite(LED_PIN, LOW);
+  }
+  if(foundSensors > MAX_SENSORS){
+    digitalWrite(LED_PIN, HIGH);
   }
   
 }
@@ -126,18 +143,18 @@ void loop() {
   for(int i=0; i < numberOfDevices && i < MAX_SENSORS; i++) {
     float tempC = sensors.getTempC(tempDeviceAddress[i]);
     Serial.print("Temperature for device: ");
-    Serial.print(i,DEC);
-    Serial.print(" - "); 
+    Serial.print(i, DEC);
+    Serial.print(" - ");
     Serial.println(tempC);
     sendPacket(i, tempC, fecha);
-    delay(250);
+    delay(100);
   }
 
   
   
-  for(int i = 0; i<= 15; i++) //Here (i<=5400) you insert the number of seconds divided by two (i.e. you want 1 minute, so 60/2=30)
+  for(int i = 0; i<= timeBetween; i++)
   {
-     LowPower.powerDown(SLEEP_2S, ADC_OFF, BOD_OFF);
+     LowPower.powerDown(SLEEP_1S, ADC_OFF, BOD_OFF);
   }
 
 }

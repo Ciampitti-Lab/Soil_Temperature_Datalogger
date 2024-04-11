@@ -1,4 +1,5 @@
 # Libraries ----
+library(plotly)
 source("back-end.R")
 
 # Page ----
@@ -6,53 +7,62 @@ main_page <- function(data){
   
   fluidPage(
     
-    setBackgroundColor(color = "#f0f0f0"),
-    style = "@import url('https://fonts.googleapis.com/css2?family=Vidaloka&display=swap'); font-family: 'Vidaloka', serif;",
-    
-    fluidRow(
-      style = "background-color: rgb(96, 96, 96); color: white; text-align: center",
-      column(
-        width = 12,
-        allign = "center",
-        tags$h2(
-          "Data Visualization Hub"
+    ## Header ----
+    div(
+      class = "header",
+      tags$h2(
+        "Temperature sensors hub"
+      ),
+      div(
+        class = "download-button",
+        tags$h3(
+          "Download the data",
+        ),
+        downloadButton(
+          outputId = "downloadData",
+          label = "Download",
+          icon = icon("download"),
+          style = "background-color: rgb(139, 148, 165);"
         )
       )
     ),
     
     br(),
     
+    ## Last readings by block (cards) ----
+    
+    fluidRow(
+      uiOutput(outputId = "lastReadingCard"),
+    ),
+    
+    ## Last readings by block (graph) ----
+    
     div(
-      style = "background-color: rgb(104, 115, 135); border-radius: 10px; padding: 2vh",
+      class = "block",
       tags$h3(
-        "Last Readings",
-        style = "text-align: center; color: white",
+        "Last readings by block"
       ),
-      div(
-        style = "background-color: rgb(139, 148, 165); color: white; padding: 2vh; margin-bottom: 0.5vh",
-        tags$h4(
-          "By block"
-        ),
-        div(
-          style = "background-color: rgb(136, 171, 184); padding: 0.5vh; color: black; text-align: center; width: 50%; margin: auto",
-          radioButtons(
+      hr(),
+      fluidRow(
+        class = "inside-block",
+        column(
+          width = 8,
+          class = "block-graph",
+          radioGroupButtons(
             inputId = "lastReadingRadio",
             label = "",
-            inline = TRUE,
+            status = "primary",
+            direction = "horizontal",
             choices = create_block_options(data),
-          )
+          ),
+          br(),
+          plotlyOutput(outputId = "lastReadingGraph"),
         ),
-        br(),
-        plotlyOutput(outputId = "lastReadingGraph"),
-      ),
-      div(
-        style = "background-color: rgb(139, 148, 165); color: white; padding: 2vh; margin-top: 0.5vh",
-        tags$h4(
-          "Mean of blocks"
-        ),
-        fluidRow(
-          uiOutput(outputId = "lastReadingCard"),
-        ),
+        column(
+          width = 4,
+          uiOutput(outputId = "maxCard"),
+          uiOutput(outputId = "minCard")
+        )
       )
     ),
     
@@ -120,28 +130,6 @@ main_page <- function(data){
     br(),
     
     div(
-      style = "background-color: rgb(104, 115, 135); border-radius: 10px; color: white; padding: 2vh",
-      tags$h3(
-        "Download the data",
-        style = "text-align: center",
-      ),
-      fluidRow(
-        column(
-          align="center",
-          width = 12,
-          downloadButton(
-            outputId = "downloadData",
-            label = "Download",
-            icon = icon("download"),
-            style = "background-color: rgb(136, 171, 184);"
-          )
-        )
-      )
-    ),
-    
-    br(),
-    
-    div(
       style = "display: inline-block; text-align: center",
       tags$h5(
         "This tool was developed by the Ciampitti Lab Group"
@@ -155,7 +143,8 @@ main_page <- function(data){
 # Small functions ----
 create_block_options <- function(data){
   choices <- unique(data$Group)
-  named_list <- as.list(setNames(choices, choices))
+  names <- paste("Block", as.character(choices))
+  named_list <- as.list(setNames(choices, names))
   return(named_list)
 }
 
