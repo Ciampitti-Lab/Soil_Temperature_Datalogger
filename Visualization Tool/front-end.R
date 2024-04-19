@@ -22,7 +22,7 @@ main_page <- function(data){
           outputId = "downloadData",
           label = "Download",
           icon = icon("download"),
-          style = "background-color: rgb(139, 148, 165);"
+          style = "background-color: rgb(139, 148, 165); color: white;"
         )
       )
     ),
@@ -36,7 +36,6 @@ main_page <- function(data){
     ),
     
     ## Last readings by block (graph) ----
-    
     div(
       class = "block",
       tags$h3(
@@ -44,7 +43,6 @@ main_page <- function(data){
       ),
       hr(),
       fluidRow(
-        class = "inside-block",
         column(
           width = 8,
           class = "block-graph",
@@ -68,69 +66,42 @@ main_page <- function(data){
     
     br(),
     
+    ## Temperature curves ----
     div(
-      style = "background-color: rgb(104, 115, 135); border-radius: 10px; color: white; padding: 2vh",
+      class = "block",
       tags$h3(
-        "Temperature curves",
-        style = "text-align: center",
+        "Temperature curves"
       ),
+      hr(),
       div(
-        style = "background-color: rgb(139, 148, 165); color: white; padding: 2vh; margin-bottom: 0.5vh",
-        tags$h4(
-          "By block"
+        class = "block-graph",
+        radioGroupButtons(
+          inputId = "blockOrMean",
+          label = "",
+          status = "primary",
+          direction = "horizontal",
+          choices = c("By block" = "byBlock",
+                      "Mean of blocks" = "meanOfBlocks"),
         ),
-        div(
-          style = "background-color: rgb(136, 171, 184); padding: 0.5vh; color: black; text-align: center; width: 50%; margin: auto",
-          radioButtons(
-            inputId = "tempCurvesBlockRadio",
-            label = "",
-            inline = TRUE,
-            choices = create_block_options(data),
-          )
+        radioGroupButtons(
+          inputId = "tempCurvesMeanTimeRadio",
+          label = "",
+          status = "primary",
+          direction = "horizontal",
+          choices = c("Hour" = "hour",
+                      "Day" = "day",
+                      "Week" = "week",
+                      "Month" = "month"),
         ),
+        uiOutput(outputId = "tempCurveWidget"),
         br(),
-        plotlyOutput(outputId = "tempCurveBlock"),
-        br(),
-        div(
-          style = "background-color: rgb(136, 171, 184); padding: 0.5vh; color: black; text-align: center; width: 25%; margin: auto; font-size: 16px",
-          radioButtons(
-            inputId = "tempCurvesTimeRadio",
-            label = "",
-            inline = TRUE,
-            choices = c("Hour" = "hour",
-                        "Day" = "day",
-                        "Week" = "week",
-                        "Month" = "month"),
-          )
-        ),
+        plotlyOutput(outputId = "tempCurve")
       ),
-      div(
-        style = "background-color: rgb(139, 148, 165); color: white; padding: 2vh; margin-top: 0.5vh",
-        tags$h4(
-          "Mean of blocks"
-        ),
-        br(),
-        plotlyOutput(outputId = "tempCurveMeanBlock"),
-        br(),
-        div(
-          style = "background-color: rgb(136, 171, 184); padding: 0.5vh; color: black; text-align: center; width: 25%; margin: auto; font-size: 16px",
-          radioButtons(
-            inputId = "tempCurvesMeanTimeRadio",
-            label = "",
-            inline = TRUE,
-            choices = c("Hour" = "hour",
-                        "Day" = "day",
-                        "Week" = "week",
-                        "Month" = "month"),
-          )
-        ),
-      )
     ),
     
-    br(),
-    
+    ## Footer ----
     div(
-      style = "display: inline-block; text-align: center",
+      style = "text-align: center",
       tags$h5(
         "This tool was developed by the Ciampitti Lab Group"
       )

@@ -179,127 +179,118 @@ cards_max_min <- function(data, block, max.min){
 
 ## Temperature Curves ----
 
-### By blocks ----
-
-curve_by_blocks <- function(database, group.selected, time.scale){
+curve_graph <- function(database, blockOrMean, group.selected, time.scale){
   
-  database$Device <- as.factor(database$Device)
+  if(blockOrMean == "byBlock"){
+    database$Device <- as.factor(database$Device)
+    
+    if(time.scale == "hour"){
+      curve.data <- database %>%
+        filter(Group == group.selected) %>%
+        group_by(DateTime)
+      
+      graph <- ggplot(data = curve.data,
+                      aes(x = DateTime, y = Reading, color = Device))+
+        geom_line()+
+        geom_point()+
+        ylab("Temperature °C")+
+        theme_minimal()
+    }
+    if(time.scale == "day"){
+      curve.data <- database %>%
+        filter(Group == group.selected) %>%
+        group_by(Date = format(DateTime, "%Y-%m-%d"))
+      
+      graph <- ggplot(data = curve.data,
+                      aes(x = Date, y = Reading, color = Device))+
+        geom_line()+
+        geom_point()+
+        ylab("Temperature °C")+
+        theme_minimal()
+    }
+    if(time.scale == "week"){
+      curve.data <- database %>%
+        filter(Group == group.selected) %>%
+        group_by(Week = format(DateTime, "%Y-%U") )
+      
+      graph <- ggplot(data = curve.data,
+                      aes(x = Week, y = Reading, color = Device))+
+        geom_line()+
+        geom_point()+
+        ylab("Temperature °C")+
+        theme_minimal()
+    }
+    if(time.scale == "month"){
+      curve.data <- database %>%
+        filter(Group == group.selected) %>%
+        group_by(Month = format(DateTime, "%Y-%m"))
+      
+      graph <- ggplot(data = curve.data,
+                      aes(x = Month, y = Reading, color = Device))+
+        geom_line()+
+        geom_point()+
+        ylab("Temperature °C")+
+        theme_minimal()
+    }
+  }
   
-  if(time.scale == "hour"){
-    curve.data <- database %>%
-      filter(Group == group.selected) %>%
-      group_by(DateTime)
+  if(blockOrMean == "meanOfBlocks"){
+    database$Group <- as.factor(database$Group)
     
-    graph <- ggplot(data = curve.data,
-                    aes(x = DateTime, y = Reading, color = Device))+
-      geom_line()+
-      geom_point()+
-      ylab("Temperature °C")+
-      theme_minimal()
-  }
-  if(time.scale == "day"){
-    curve.data <- database %>%
-      filter(Group == group.selected) %>%
-      group_by(Date = format(DateTime, "%Y-%m-%d"))
-    
-    graph <- ggplot(data = curve.data,
-                    aes(x = Date, y = Reading, color = Device))+
-      geom_line()+
-      geom_point()+
-      ylab("Temperature °C")+
-      theme_minimal()
-  }
-  if(time.scale == "week"){
-    curve.data <- database %>%
-      filter(Group == group.selected) %>%
-      group_by(Week = format(DateTime, "%Y-%U") )
-    
-    graph <- ggplot(data = curve.data,
-                    aes(x = Week, y = Reading, color = Device))+
-      geom_line()+
-      geom_point()+
-      ylab("Temperature °C")+
-      theme_minimal()
-  }
-  if(time.scale == "month"){
-    curve.data <- database %>%
-      filter(Group == group.selected) %>%
-      group_by(Month = format(DateTime, "%Y-%m"))
-    
-    graph <- ggplot(data = curve.data,
-                    aes(x = Month, y = Reading, color = Device))+
-      geom_line()+
-      geom_point()+
-      ylab("Temperature °C")+
-      theme_minimal()
+    if(time.scale == "hour"){
+      curve.data <- database %>%
+        group_by(Group,
+                 DateTime) %>%
+        summarise(Readings = mean(Reading, na.rm = TRUE))
+      
+      graph <- ggplot(data = curve.data,
+                      aes(x = DateTime, y = Readings, color=Group))+
+        geom_line()+
+        geom_point()+
+        ylab("Temperature °C")+
+        theme_minimal()
+    }
+    if(time.scale == "day"){
+      curve.data <- database %>%
+        group_by(Group,
+                 Date = format(DateTime, "%Y-%m-%d")) %>%
+        summarise(Readings = mean(Reading, na.rm = TRUE))
+      
+      graph <- ggplot(data = curve.data,
+                      aes(x = Date, y = Readings, group=Group))+
+        geom_line()+
+        geom_point()+
+        ylab("Temperature °C")+
+        theme_minimal()
+    }
+    if(time.scale == "week"){
+      curve.data <- database %>%  
+        group_by(Group,
+                 Week = format(DateTime, "%Y-%U") ) %>%
+        summarise(Readings = mean(Reading, na.rm = TRUE))
+      
+      graph <- ggplot(data = curve.data,
+                      aes(x = Week, y = Readings, group=Group))+
+        geom_line()+
+        geom_point()+
+        ylab("Temperature °C")+
+        theme_minimal()
+    }
+    if(time.scale == "month"){
+      curve.data <- database %>%
+        group_by(Group,
+                 Month = format(DateTime, "%Y-%m")) %>%
+        summarise(Readings = mean(Reading, na.rm = TRUE))
+      
+      graph <- ggplot(data = curve.data,
+                      aes(x = Month, y = Readings, group=1))+
+        geom_line()+
+        geom_point()+
+        ylab("Temperature °C")+
+        theme_minimal()
+    }
   }
   
   ggplotly(graph)
   
 }
-
-#curve.by.blocks(database = data, group.selected = "1", time.scale = "minute")
-
-### Mean of blocks ----
-
-curve_mean_blocks <- function(database, time.scale){
-  
-  database$Group <- as.factor(database$Group)
-  
-  if(time.scale == "hour"){
-    curve.data <- database %>%
-      group_by(Group,
-               DateTime) %>%
-      summarise(Readings = mean(Reading, na.rm = TRUE))
-    
-    graph <- ggplot(data = curve.data,
-                    aes(x = DateTime, y = Readings, color=Group))+
-      geom_line()+
-      geom_point()+
-      ylab("Temperature °C")+
-      theme_minimal()
-  }
-  if(time.scale == "day"){
-    curve.data <- database %>%
-      group_by(Group,
-               Date = format(DateTime, "%Y-%m-%d")) %>%
-      summarise(Readings = mean(Reading, na.rm = TRUE))
-    
-    graph <- ggplot(data = curve.data,
-                    aes(x = Date, y = Readings, group=Group))+
-      geom_line()+
-      geom_point()+
-      ylab("Temperature °C")+
-      theme_minimal()
-  }
-  if(time.scale == "week"){
-    curve.data <- database %>%  
-      group_by(Group,
-               Week = format(DateTime, "%Y-%U") ) %>%
-      summarise(Readings = mean(Reading, na.rm = TRUE))
-    
-    graph <- ggplot(data = curve.data,
-                    aes(x = Week, y = Readings, group=Group))+
-      geom_line()+
-      geom_point()+
-      ylab("Temperature °C")+
-      theme_minimal()
-  }
-  if(time.scale == "month"){
-    curve.data <- database %>%
-      group_by(Group,
-               Month = format(DateTime, "%Y-%m")) %>%
-      summarise(Readings = mean(Reading, na.rm = TRUE))
-    
-    graph <- ggplot(data = curve.data,
-                    aes(x = Month, y = Readings, group=1))+
-      geom_line()+
-      geom_point()+
-      ylab("Temperature °C")+
-      theme_minimal()
-  }
-  
-  ggplotly(graph)
-}
-
-#curve.mean.blocks(database = data, time.scale = "minute")

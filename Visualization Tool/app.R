@@ -22,6 +22,10 @@ ui <- tagList(
 # Server ----
 server <- function(input, output, session) {
   
+  output$page <- renderUI({
+    main_page(data, input)
+  })
+  
   output$lastReadingGraph <- renderPlotly({
     last_reading_graph(data = data,
                        group.selected = input$lastReadingRadio)
@@ -30,12 +34,6 @@ server <- function(input, output, session) {
   output$lastReadingCard <- renderUI({
     cards_last(data = data)
   })
-  
-  output$tempCurveBlock <- renderPlotly(
-    curve_by_blocks(database = data,
-                    group.selected = input$tempCurvesBlockRadio,
-                    time.scale = input$tempCurvesTimeRadio)
-  )
   
   output$maxCard <- renderUI({
     cards_max_min(data = data,
@@ -49,9 +47,23 @@ server <- function(input, output, session) {
                   max.min = "min")
   })
   
-  output$tempCurveMeanBlock <- renderPlotly(
-    curve_mean_blocks(database = data,
-                      time.scale = input$tempCurvesMeanTimeRadio)
+  output$tempCurveWidget <- renderUI({
+    if(input$blockOrMean == "byBlock"){
+          radioGroupButtons(
+            inputId = "tempCurvesBlockRadio",
+            label = "",
+            status = "primary",
+            direction = "horizontal",
+            choices = create_block_options(data)
+          )
+        }
+  })
+  
+  output$tempCurve <- renderPlotly(
+    curve_graph(database = data,
+                blockOrMean = input$blockOrMean,
+                group.selected = input$tempCurvesBlockRadio,
+                time.scale = input$tempCurvesMeanTimeRadio)
   )
   
   output$downloadData <- downloadHandler(
