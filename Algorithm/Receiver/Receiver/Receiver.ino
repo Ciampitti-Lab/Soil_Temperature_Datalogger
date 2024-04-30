@@ -50,7 +50,7 @@ String LoRaData;
 int httpResponseCode;
 
 // Minimizing number of requests
-#define MAX_ENTRIES 8 // Number of sensors
+#define MAX_ENTRIES 6 // Number of sensors
 int entryCount = 0;
 struct Reading {
   String device;
@@ -115,13 +115,13 @@ void setup() {
   }
 
   // Connecting to internet
-  WiFi.begin(ssid, password);
-  while(WiFi.status() != WL_CONNECTED) {
-    delay(500);
-    Serial.println(".");
-  }
-  Serial.print("Connected to WiFi network with IP Address: ");
-  Serial.println(WiFi.localIP());
+  //WiFi.begin(ssid, password);
+  //while(WiFi.status() != WL_CONNECTED) {
+  //  delay(500);
+   // Serial.println(".");
+ // }
+  //Serial.print("Connected to WiFi network with IP Address: ");
+  //Serial.println(WiFi.localIP());
 
 }
 
@@ -177,7 +177,7 @@ void loop() {
     readings[entryCount].reading = reading;
     doc["dateTime"] = date;
     doc["LoRa RSSI"] = rssi;
-    doc["Wifi RSSI"] = String(WiFi.RSSI());
+    //doc["Wifi RSSI"] = String(WiFi.RSSI());
     entryCount++;
 
     bool hasErrorReading = false;
@@ -189,7 +189,7 @@ void loop() {
     }
 
     if (entryCount == MAX_ENTRIES) {
-      POSTData();
+      //POSTData();
       entryCount = 0;
     }
 

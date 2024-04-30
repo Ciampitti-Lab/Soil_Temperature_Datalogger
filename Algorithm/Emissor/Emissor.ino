@@ -32,14 +32,14 @@ DallasTemperature sensors(&oneWire);
 int numberOfDevices; 
 
 // Define the maximum number of sensors
-#define MAX_SENSORS 8
+#define MAX_SENSORS 6
 
 // We'll use this variable to store a found device address
 DeviceAddress tempDeviceAddress[MAX_SENSORS];
 int foundSensors = 0;
 
 // Desired time between measurements, in seconds
-int timeBetween = 1800;
+int timeBetween = 7200; //7200
 
 // Warning LED
 #define LED_PIN 8
