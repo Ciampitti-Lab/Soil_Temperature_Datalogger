@@ -115,13 +115,13 @@ void setup() {
   }
 
   // Connecting to internet
-  //WiFi.begin(ssid, password);
-  //while(WiFi.status() != WL_CONNECTED) {
-  //  delay(500);
-   // Serial.println(".");
- // }
-  //Serial.print("Connected to WiFi network with IP Address: ");
-  //Serial.println(WiFi.localIP());
+  WiFi.begin(ssid, password);
+  while(WiFi.status() != WL_CONNECTED) {
+    delay(500);
+    Serial.println(".");
+  }
+  Serial.print("Connected to WiFi network with IP Address: ");
+  Serial.println(WiFi.localIP());
 
 }
 
@@ -155,7 +155,7 @@ void loop() {
 
     }
 
-    myFile = SD.open("/test.txt", FILE_APPEND);
+    myFile = SD.open("/test.txt", FILE_APPEND); // Change "test.txt" to the local database txt file you set before, keeping the "/"
     myFile.print(id);
     myFile.print(",");
     myFile.print(device);
@@ -177,7 +177,7 @@ void loop() {
     readings[entryCount].reading = reading;
     doc["dateTime"] = date;
     doc["LoRa RSSI"] = rssi;
-    //doc["Wifi RSSI"] = String(WiFi.RSSI());
+    doc["Wifi RSSI"] = String(WiFi.RSSI());
     entryCount++;
 
     bool hasErrorReading = false;
@@ -189,7 +189,7 @@ void loop() {
     }
 
     if (entryCount == MAX_ENTRIES) {
-      //POSTData();
+      POSTData();
       entryCount = 0;
     }
 
