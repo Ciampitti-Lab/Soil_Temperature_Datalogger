@@ -14,7 +14,7 @@
 #define dio0 2
 
 // Device ID
-int ID = 1;
+int ID = 2;
 
 // Variables for RTC
 RTC_DS3231 rtc;
@@ -32,7 +32,7 @@ DallasTemperature sensors(&oneWire);
 int numberOfDevices; 
 
 // Define the maximum number of sensors
-#define MAX_SENSORS 6
+#define MAX_SENSORS 5
 
 // We'll use this variable to store a found device address
 DeviceAddress tempDeviceAddress[MAX_SENSORS];

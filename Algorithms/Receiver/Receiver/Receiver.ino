@@ -50,7 +50,7 @@ String LoRaData;
 int httpResponseCode;
 
 // Minimizing number of requests
-#define MAX_ENTRIES 6 // Number of sensors
+#define MAX_ENTRIES 5 // Number of sensors
 int entryCount = 0;
 struct Reading {
   String device;
