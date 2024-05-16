@@ -9,9 +9,9 @@ app = Flask(__name__)
 CORS(app)
 
 # Information of the mongoDB database
-client = MongoClient('mongodb+srv://GustavoSantiago11:Trichoderm%4011@soiltemptest.sybjusy.mongodb.net/')  # Remote database URL
+client = MongoClient('mongodb://localhost:27017/')  # Remote database URL
 db = client['SoilTemp'] # Remote database's database name
-collection = db['validation'] # Collection name
+collection = db['test'] # Collection name
 
 @app.route('/store', methods=['POST'])
 #Function to store data

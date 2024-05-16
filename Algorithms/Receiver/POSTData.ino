@@ -3,11 +3,6 @@ void POSTData()
 
     // Serialize JSON to string
     String jsonString;
-    JsonObject readingObject = doc.createNestedObject("reading");
-
-    for (int i = 0; i < entryCount; i++) {
-      readingObject["Device " + readings[i].device] = readings[i].reading;
-    }
 
     serializeJson(doc, jsonString);
 

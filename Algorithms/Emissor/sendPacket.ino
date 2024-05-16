@@ -1,13 +1,14 @@
-void sendPacket(int i, float tempC, DateTime fecha)
+void sendPacket(float readings[], DateTime fecha, int number_sensors)
 {
 
   LoRa.beginPacket();
   LoRa.print("ID:");
   LoRa.print(ID);
-  LoRa.print(", Device:");
-  LoRa.print(i);
-  LoRa.print(", Temperature:");
-  LoRa.print(tempC);
+  LoRa.print(", Readings:");
+  for(int i=0; i<number_sensors; i++){
+    LoRa.print(readings[i]);
+    LoRa.print("/");
+  }
   LoRa.print(", DateTime:");
   LoRa.print(fecha.day());
   LoRa.print("/");

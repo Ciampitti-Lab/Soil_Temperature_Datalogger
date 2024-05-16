@@ -1,5 +1,10 @@
 // Author: Gustavo N. Santiago
 
+//////// Modify only this parts of the code ///////
+#define file_name "/test.txt" // Change "test.txt" to the local database txt file you set before, keeping the "/"
+long frequency = 915E6;
+///////////////////////////////////////////////////
+
 //Libraries for LoRa
 #include <SPI.h>
 #include <LoRa.h>
@@ -35,8 +40,8 @@
 //OLED pins
 #define OLED_SDA 21
 #define OLED_SCL 22 
-#define SCREEN_WIDTH 128 // OLED display width, in pixels
-#define SCREEN_HEIGHT 64 // OLED display height, in pixels
+#define SCREEN_WIDTH 128
+#define SCREEN_HEIGHT 64
 Adafruit_SSD1306 display(SCREEN_WIDTH, SCREEN_HEIGHT, &Wire, OLED_RST);
 
 // For SD card
@@ -49,14 +54,7 @@ String LoRaData;
 // Monitore sending data to cloud
 int httpResponseCode;
 
-// Minimizing number of requests
-#define MAX_ENTRIES 6 // Number of sensors
-int entryCount = 0;
-struct Reading {
-  String device;
-  String reading;
-};
-Reading readings[MAX_ENTRIES];
+// Json document
 DynamicJsonDocument doc(1024);
 
 void setup() { 
@@ -66,9 +64,9 @@ void setup() {
 
   // Initialize OLED
   Wire.begin(OLED_SDA, OLED_SCL);
-  if(!display.begin(SSD1306_SWITCHCAPVCC, 0x3c, false, false)) { // Address 0x3C for 128x32
+  if(!display.begin(SSD1306_SWITCHCAPVCC, 0x3c, false, false)) { 
     Serial.println(F("SSD1306 allocation failed"));
-    for(;;); // Don't proceed, loop forever
+    for(;;);
   }
 
   display.clearDisplay();
@@ -82,7 +80,7 @@ void setup() {
   LoRa.setPins(CS, RST, DIO0);
 
   //Initialize LoRa
-  if (!LoRa.begin(915E6)) {
+  if (!LoRa.begin(frequency)) {
     Serial.println("Starting LoRa failed!");
     while (1);
   }
@@ -120,8 +118,11 @@ void setup() {
     delay(500);
     Serial.println(".");
   }
-  Serial.print("Connected to WiFi network with IP Address: ");
-  Serial.println(WiFi.localIP());
+  Serial.println("Connected to WiFi");
+  display.clearDisplay();
+  display.setCursor(0,10);
+  display.println("Connected to WiFi");
+  display.display();
 
 }
 
@@ -131,7 +132,6 @@ void loop() {
   int packetSize = LoRa.parsePacket();
 
   String id;
-  String device;
   String reading;
   String date;
 
@@ -146,19 +146,15 @@ void loop() {
 
       if(LoRaData.endsWith("ID"))
         id = LoRa.readStringUntil(',');
-      if(LoRaData.endsWith("Device"))
-        device = LoRa.readStringUntil(',');
-      if(LoRaData.endsWith("Temperature"))
+      if(LoRaData.endsWith("Readings"))
         reading = LoRa.readStringUntil(',');
       if(LoRaData.endsWith("DateTime"))
         date = LoRa.readStringUntil(',');
 
     }
 
-    myFile = SD.open("/test.txt", FILE_APPEND); // Change "test.txt" to the local database txt file you set before, keeping the "/"
+    myFile = SD.open(file_name, FILE_APPEND); 
     myFile.print(id);
-    myFile.print(",");
-    myFile.print(device);
     myFile.print(",");
     myFile.print(reading);
     myFile.print(",");
@@ -166,32 +162,17 @@ void loop() {
     myFile.println(",");
     myFile.close();
 
-    Serial.println("Saved data to SD card.");
-
     // Print RSSI of packet
     int rssi = LoRa.packetRssi();
 
     //Parsing Data to JSON:
     doc["group"] = id;
-    readings[entryCount].device = device;
-    readings[entryCount].reading = reading;
+    doc["readings"] = reading;
     doc["dateTime"] = date;
     doc["LoRa RSSI"] = rssi;
     doc["Wifi RSSI"] = String(WiFi.RSSI());
-    entryCount++;
 
-    bool hasErrorReading = false;
-    for (int i = 0; i < entryCount; i++) {
-      if (readings[i].reading == "-127.00") {
-        hasErrorReading = true;
-        break; // Exit the loop early if an error reading is found
-      }
-    }
-
-    if (entryCount == MAX_ENTRIES) {
-      POSTData();
-      entryCount = 0;
-    }
+    POSTData();
 
     // Display information
     display.clearDisplay();
@@ -209,7 +190,7 @@ void loop() {
     display.print(rssi);
 
     display.setCursor(0,30);
-    display.print("Response:");
+    display.print("Remote:");
     display.setCursor(60,30);
     if(httpResponseCode == 200){
       display.print("Sucess");
@@ -218,10 +199,9 @@ void loop() {
       display.print("Error");
     }
 
-    if(hasErrorReading == true){
-      display.setCursor(0,40);
-      display.print("Sensor reading error");
-    }
+    display.setCursor(0,40);
+    display.print("Saved data to card");
+
     display.display();
 
   }
