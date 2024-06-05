@@ -3,7 +3,7 @@
 //////// Modify only this parts of the code ///////
 int ID = 1; // Device ID - Group number
 #define MAX_SENSORS 5 // Define the maximum number of sensors
-int timeBetween = 10; // Desired time between measurements, in seconds
+int timeBetween = 60; // Desired time between measurements, in seconds
 ///////////////////////////////////////////////////
 
 // Including Libraries

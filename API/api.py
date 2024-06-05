@@ -9,9 +9,9 @@ app = Flask(__name__)
 CORS(app)
 
 # Information of the mongoDB database
-client = MongoClient('mongodb://localhost:27017/')  # Remote database URL
-db = client['SoilTemp'] # Remote database's database name
-collection = db['test'] # Collection name
+client = MongoClient('******************************')  # Remote database URL
+db = client['************'] # Remote database's database name
+collection = db['*********'] # Collection name
 
 @app.route('/store', methods=['POST'])
 #Function to store data
@@ -39,4 +39,4 @@ def obtain():
 # Start app
 if __name__ == '__main__':
     WSGIRequestHandler.protocol_version = "HTTP/1.1"
-    app.run(debug=False, use_reloader=False)
+    app.run(host='0.0.0.0', debug=False, use_reloader=False)
