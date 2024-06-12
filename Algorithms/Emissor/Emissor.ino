@@ -1,5 +1,12 @@
 // Author: Gustavo Nocera Santiago
 
+//////// Modify only this parts of the code ///////
+int ID = 1; // Device ID - Group number
+#define MAX_SENSORS 5 // Define the maximum number of sensors
+int timeBetween = 60; // Desired time between measurements, in seconds
+long frequency = 915E6; // Lora frequency
+///////////////////////////////////////////////////
+
 // Including Libraries
 #include <Wire.h>
 #include <RTClib.h> // For RTC Clock
@@ -12,9 +19,6 @@
 #define ss 10
 #define rst 9
 #define dio0 2
-
-// Device ID
-int ID = 2;
 
 // Variables for RTC
 RTC_DS3231 rtc;
@@ -31,15 +35,10 @@ DallasTemperature sensors(&oneWire);
 // Number of temperature devices you are using
 int numberOfDevices; 
 
-// Define the maximum number of sensors
-#define MAX_SENSORS 5
-
 // We'll use this variable to store a found device address
 DeviceAddress tempDeviceAddress[MAX_SENSORS];
 int foundSensors = 0;
-
-// Desired time between measurements, in seconds
-int timeBetween = 7200; //7200
+int number_sensors = MAX_SENSORS;
 
 // Warning LED
 #define LED_PIN 8
@@ -62,7 +61,7 @@ void setup() {
   LoRa.setPins(ss, rst, dio0);
 
   // LoRa begin
-  if (LoRa.begin(915E6)) {
+  if (LoRa.begin(frequency)) {
     Serial.println("Starting LoRa success!");
     delay(500);
   }else{
@@ -83,6 +82,17 @@ void setup() {
   Serial.print("Found ");
   Serial.print(numberOfDevices, DEC);
   Serial.println(" devices.");
+
+  if (numberOfDevices > MAX_SENSORS) {
+      digitalWrite(LED_PIN, HIGH);
+      Serial.print("Number of devices higher than set. Please, fix");
+      while(1);
+  }
+  if (numberOfDevices < MAX_SENSORS) {
+      digitalWrite(LED_PIN, HIGH);
+      Serial.print("Number of devices lower than set. Please, fix");
+      while(1);
+  }
   
   while (foundSensors < MAX_SENSORS) {
     sensors.begin();
@@ -115,9 +125,6 @@ void setup() {
   if(foundSensors == MAX_SENSORS){
     digitalWrite(LED_PIN, LOW);
   }
-  if(foundSensors > MAX_SENSORS){
-    digitalWrite(LED_PIN, HIGH);
-  }
   
 }
 
@@ -139,6 +146,7 @@ void loop() {
   Serial.print(":");
   Serial.println(fecha.minute());
   
+  float package[number_sensors];
   // Loop through each device, print out temperature data
   for(int i=0; i < numberOfDevices && i < MAX_SENSORS; i++) {
     float tempC = sensors.getTempC(tempDeviceAddress[i]);
@@ -146,11 +154,11 @@ void loop() {
     Serial.print(i, DEC);
     Serial.print(" - ");
     Serial.println(tempC);
-    sendPacket(i, tempC, fecha);
-    delay(100);
+    package[i] = tempC;
+    delay(35);
   }
 
-  
+  sendPacket(package, fecha, number_sensors);
   
   for(int i = 0; i<= timeBetween; i++)
   {
