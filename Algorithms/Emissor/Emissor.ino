@@ -4,6 +4,7 @@
 int ID = 1; // Device ID - Group number
 #define MAX_SENSORS 5 // Define the maximum number of sensors
 int timeBetween = 60; // Desired time between measurements, in seconds
+long frequency = 915E6; // Lora frequency
 ///////////////////////////////////////////////////
 
 // Including Libraries
@@ -60,7 +61,7 @@ void setup() {
   LoRa.setPins(ss, rst, dio0);
 
   // LoRa begin
-  if (LoRa.begin(915E6)) {
+  if (LoRa.begin(frequency)) {
     Serial.println("Starting LoRa success!");
     delay(500);
   }else{
