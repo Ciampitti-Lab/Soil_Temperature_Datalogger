@@ -1,10 +1,12 @@
 // Author: Gustavo Nocera Santiago
 
 //////// Modify only this parts of the code ///////
-int ID = 1; // Device ID - Group number
+int ID = 2; // Device ID - Group number
 #define MAX_SENSORS 5 // Define the maximum number of sensors
-int timeBetween = 60; // Desired time between measurements, in seconds
+int timeBetween = 10; // Desired time between measurements, in seconds
 long frequency = 915E6; // Lora frequency
+float beta_zero = -0.47887; // Beta zero from the calibration linear regression
+float beta_one = 1.01903; // Coefficient from the calibration linear regression
 ///////////////////////////////////////////////////
 
 // Including Libraries
@@ -154,7 +156,7 @@ void loop() {
     Serial.print(i, DEC);
     Serial.print(" - ");
     Serial.println(tempC);
-    package[i] = tempC;
+    package[i] = beta_zero +  (beta_one * tempC);
     delay(35);
   }
 
