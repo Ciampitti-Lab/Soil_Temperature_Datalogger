@@ -14,6 +14,12 @@
 
 ---
 
+## Contributors
+
+- Gustavo Nocera Santiago ([@GustavoSantiago113](https://github.com/GustavoSantiago113))
+  
+---
+
 ## Objective
 Develop a data logger to collect temperature data in an inside environment using Arduino, LILYGO TTGO and temperature sensors. It works connected to the power source and saves the sensor data along with the date and time into remote and local databases.
 
